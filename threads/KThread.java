@@ -272,15 +272,36 @@ public class KThread {
      * call is not guaranteed to return. This thread must not be the current
      * thread.
      */
+  
+    public int isCalled = 0;
+    
     public void join() {
 	Lib.debug(dbgThread, "Joining to thread: " + toString());
 	
-	
-	if(this == currentThread){
-		return; //if currentThread was already finished
+	//if this method has already been called return else set isCalled to 1
+	if(isCalled == 1){
+		return;
 	}
-	Machine.interrupt().disable();
-	sleep();
+	else {
+		isCalled = 1; 
+	}
+	
+	//if currentThread is the current thread
+	if(this == currentThread){
+		return;
+	}
+	//if currentThread was already finished
+	if(this.status == statusFinished){
+		currentThread.finish();
+		return;
+	}
+	else {
+		this.readyQueue.add(currentThread);
+		Machine.interrupt().disable();
+		currentThread.sleep();
+	}
+	
+	
 	
 	//Lib.assertTrue(this != currentThread);
 

@@ -1,5 +1,8 @@
 package nachos.threads;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import nachos.machine.*;
 
 /**
@@ -27,7 +30,13 @@ public class Alarm {
      * that should be run.
      */
     public void timerInterrupt() {
-	KThread.currentThread().yield();
+	
+    	long currentTime = Machine.timer().getTime();	   	
+	
+		boolean setStatus = Machine.interrupt().disable();
+		currentThread.yield();
+		
+		Machine.interrupt().restore(setStatus);			
     }
 
     /**
@@ -46,8 +55,21 @@ public class Alarm {
      */
     public void waitUntil(long x) {
 	// for now, cheat just to get something working (busy waiting is bad)
-	long wakeTime = Machine.timer().getTime() + x;
-	while (wakeTime > Machine.timer().getTime())
-	    KThread.yield();
+    	
+    if (x <= 0) {
+    	return;
     }
+    
+    currentThread = KThread.currentThread();	
+	long wakeTime = Machine.timer().getTime() + x;
+	Machine.interrupt().disable();
+	
+	while(wakeTime < Machine.timer().getTime()){
+		currentThread.sleep();
+	}
+	timerInterrupt();
+    }
+    private KThread currentThread;
+    private KThread thread;
+    private long waketime;
 }

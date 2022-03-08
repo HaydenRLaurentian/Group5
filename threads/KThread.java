@@ -278,7 +278,6 @@ public class KThread {
     public void join() {
 	Lib.debug(dbgThread, "Joining to thread: " + toString());
 	
-	//if this method has already been called return else set isCalled to 1
 	if(isCalled == 1){
 		return;
 	}
@@ -286,24 +285,15 @@ public class KThread {
 		isCalled = 1; 
 	}
 	
-	//if currentThread is the current thread
-	if(this == currentThread){
-		return;
-	}
-	//if currentThread was already finished
-	if(this.status == statusFinished){
-		currentThread.finish();
-		return;
-	}
-	else {
-		this.readyQueue.add(currentThread);
-		Machine.interrupt().disable();
-		currentThread.sleep();
-	}
-	
-	
-	
-	//Lib.assertTrue(this != currentThread);
+	Machine.interrupt().disable();
+    
+    if(this != currentThread){
+        if(currentThread != null){
+            readyQueue.waitForAccess(currentThread);
+            KThread.sleep();
+        }
+    }
+    Machine.interrupt().enable();
 
     }
 
@@ -432,6 +422,42 @@ public class KThread {
 	Lib.debug(dbgThread, "Enter KThread.selfTest");	
 	new KThread(new PingTest(1)).setName("forked thread").fork();
 	new PingTest(0).run();
+	
+	//Join Thread
+	new KThread(new Runnable(){
+		public void run(){
+			System.out.println("Running Test Case 1");
+			currentThread.join();
+			finish();
+			System.out.println("Not Printing");
+		}
+		
+	}).setName("Test Case 1").fork();
+
+	// Joining Twice
+	new KThread(new Runnable(){
+		public void run(){
+			System.out.println("Running Test Case 2");
+			currentThread.join();
+			currentThread.join();
+			finish();
+			System.out.println("Not Printing");
+		}
+		
+	}).setName("Test Case 2").fork();
+	
+	//Yield before finish
+	new KThread(new Runnable(){
+		public void run(){
+			System.out.println("Running Test Case 3");
+			currentThread.join();
+			yield();
+			finish();
+			System.out.println("Not Printing");
+		}
+		
+	}).setName("Test Case 3").fork();
+	
     }
 
     private static final char dbgThread = 't';

@@ -414,7 +414,6 @@ public class KThread {
 
 	private int which;
     }
-    //Test
     /**
      * Tests whether this module is working.
      */
@@ -422,6 +421,7 @@ public class KThread {
 	Lib.debug(dbgThread, "Enter KThread.selfTest");	
 	new KThread(new PingTest(1)).setName("forked thread").fork();
 	new PingTest(0).run();
+	
 	
 	//Join Thread
 	new KThread(new Runnable(){

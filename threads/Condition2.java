@@ -49,6 +49,11 @@ public class Condition2 {
 	conditionLock.acquire();
     }
 
+    
+    public static void selfTest(){
+    	
+    }
+    	
     /**
      * Wake up at most one thread sleeping on this condition variable. The
      * current thread must hold the associated lock.

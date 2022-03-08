@@ -35,6 +35,11 @@ public class Alarm {
 		Machine.interrupt().restore(setStatus);			
     }
 
+    public static void selfTest(){
+    	
+    	
+    	
+    }
     /**
      * Put the current thread to sleep for at least <i>x</i> ticks,
      * waking it up in the timer interrupt handler. The thread must be

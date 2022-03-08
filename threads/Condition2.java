@@ -1,5 +1,7 @@
 package nachos.threads;
 
+import java.util.LinkedList;
+
 import nachos.machine.*;
 
 /**
@@ -22,6 +24,7 @@ public class Condition2 {
      */
     public Condition2(Lock conditionLock) {
 	this.conditionLock = conditionLock;
+    waitList = new LinkedList(); 
     }
 
     /**
@@ -33,8 +36,15 @@ public class Condition2 {
     public void sleep() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
+	//add thread to linkList of waiting threads, release lock,
+	// disable interrupt, sleep thread
+	KThread.currentThread = KThread.currentThread();
+	waitList.add(currentThread);
 	conditionLock.release();
-
+	boolean setStatus = Machine.interrupt().disable();
+	KThread.sleep();
+    //restore interrupt, aquire lock
+	Machine.interrupt().restore(setStatus);
 	conditionLock.acquire();
     }
 
@@ -44,6 +54,18 @@ public class Condition2 {
      */
     public void wake() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+	
+	//the idea here is if several threads were added to the
+	//linked list the first thread added would be at the last
+	//index in the list
+	if(waitList.size() > 0){
+		boolean setStatus = Machine.interrupt().disable();
+		KThread thread = waitList.removeLast();
+		if(thread != null){
+			thread.ready();
+		}
+	Machine.interrupt().restore(setStatus);
+	}
     }
 
     /**
@@ -52,7 +74,12 @@ public class Condition2 {
      */
     public void wakeAll() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+	for(int i = 0; i <= waitList.size(); i++){
+		KThread thread = waitList.get(i);
+		thread.wake();
+	}
     }
 
     private Lock conditionLock;
+    private LinkedList waitList;
 }

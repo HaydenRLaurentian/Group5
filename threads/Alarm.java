@@ -30,12 +30,8 @@ public class Alarm {
      * that should be run.
      */
     public void timerInterrupt() {
-	
-    	long currentTime = Machine.timer().getTime();	   	
-	
 		boolean setStatus = Machine.interrupt().disable();
-		currentThread.yield();
-		
+		KThread.yield();
 		Machine.interrupt().restore(setStatus);			
     }
 
@@ -59,17 +55,14 @@ public class Alarm {
     if (x <= 0) {
     	return;
     }
-    
-    currentThread = KThread.currentThread();	
+    	
 	long wakeTime = Machine.timer().getTime() + x;
 	Machine.interrupt().disable();
 	
 	while(wakeTime < Machine.timer().getTime()){
-		currentThread.sleep();
+		KThread.sleep();
 	}
 	timerInterrupt();
     }
-    private KThread currentThread;
-    private KThread thread;
-    private long waketime;
+
 }

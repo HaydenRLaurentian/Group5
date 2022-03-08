@@ -24,7 +24,8 @@ public class Condition2 {
      */
     public Condition2(Lock conditionLock) {
 	this.conditionLock = conditionLock;
-    waitList = new LinkedList(); 
+    waitList = new LinkedList<KThread>(); 
+    thread = new KThread();
     }
 
     /**
@@ -38,7 +39,7 @@ public class Condition2 {
 
 	//add thread to linkList of waiting threads, release lock,
 	// disable interrupt, sleep thread
-	KThread.currentThread = KThread.currentThread();
+	KThread currentThread = KThread.currentThread();
 	waitList.add(currentThread);
 	conditionLock.release();
 	boolean setStatus = Machine.interrupt().disable();
@@ -60,7 +61,7 @@ public class Condition2 {
 	//index in the list
 	if(waitList.size() > 0){
 		boolean setStatus = Machine.interrupt().disable();
-		KThread thread = waitList.removeLast();
+		KThread thread = (KThread) waitList.removeLast();
 		if(thread != null){
 			thread.ready();
 		}
@@ -75,11 +76,13 @@ public class Condition2 {
     public void wakeAll() {
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 	for(int i = 0; i <= waitList.size(); i++){
-		KThread thread = waitList.get(i);
-		thread.wake();
+		
+		thread = (KThread) waitList.get(i);
+		wake();
 	}
     }
 
     private Lock conditionLock;
-    private LinkedList waitList;
+    private LinkedList<KThread> waitList;
+    KThread thread;
 }

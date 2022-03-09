@@ -71,10 +71,9 @@ public class ReactWater{
 
             public void run(){
                 testLock.acquire();
-				System.out.println("-----------------------React Water Testing----------------------------");
                 System.out.println("Test Case 1: 1 Hydrogen Atom");
                 react.hReady();    
-                System.out.println("Test Case 1: Water shouldn't have been made because we only have " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms."); 
+                System.out.println("Test Case 1: No water was made " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms."); 
 				System.out.println("Test Case 1: Complete");
 				testLock.release();
 				
@@ -87,13 +86,13 @@ public class ReactWater{
                 testLock.acquire();
                 System.out.println("Test Case 2: 2 Hydrogen Atoms");
                 react.hReady();    
-                System.out.println("Test Case 2: Water shouldn't have been made because we only have " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms."); 
+                System.out.println("Test Case 2: No water was made " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms."); 
 				System.out.println("Test Case 2: Complete");
 				testLock.release();
 				
         } } ).setName("Test 2");
 		water2.fork();
-		//water1.join();
+		water1.join();
 		
 		KThread water3 = new KThread(new Runnable(){
 
@@ -101,7 +100,7 @@ public class ReactWater{
                 testLock.acquire();
                 System.out.println("Test Case 3: 3 Hydrogen Atoms");
                 react.hReady();    
-                System.out.println("Test Case 3: Water shouldn't have been made because we only have " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms."); 
+                System.out.println("Test Case 3: No water was made  " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms."); 
 				System.out.println("Test Case 3: Complete");
 				testLock.release();
 				
@@ -115,14 +114,14 @@ public class ReactWater{
                 testLock.acquire();
                 System.out.println("Test Case 4: 3 Hydrogen Atoms, 1 Oxygen Atom");
                 react.oReady();    
-                System.out.println("Test Case 4: Water should have been made with " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms left over."); 
+                System.out.println("Test Case 4: Water should be made " + react.hydrogenCount + " hydrogen atoms and " + react.oxygenCount + " oxygen atoms left over."); 
 				System.out.println("Test Case 4: Complete");
 				testLock.release();
 				
         } } ).setName("Test 4");
 		water4.fork();
-		//water1.join();
-		//water2.join();	
+		water1.join();
+		water2.join();	
 		
 		
 	}

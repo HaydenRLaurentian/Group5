@@ -1,5 +1,6 @@
 package nachos.threads;
 
+import nachos.ag.AutoGrader;
 import nachos.machine.*;
 
 /**
@@ -46,12 +47,11 @@ public class ThreadedKernel extends Kernel {
      * tests here.
      */	
     public void selfTest() {
-	KThread.selfTest();
-	Condition2.selfTest();
-	Alarm.selfTest();
-	Communicator.selfTest();
-	ReactWater.selfTest();	
-	
+	//KThread.selfTest();
+	//Condition2.selfTest();
+	//Alarm.selfTest();				SELF TESTS WE USED
+	//Communicator.selfTest();
+	//ReactWater.selfTest();	
 	
 	Semaphore.selfTest();
 	SynchList.selfTest();

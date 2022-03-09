@@ -38,7 +38,7 @@ public class Communicator {
     	lstn--;
     	msg = word;
     	spkReady.wake();
-    	lock.acquire();
+    	lock.release();
     }
 
     /**
@@ -63,8 +63,19 @@ public class Communicator {
     }
     
     public static void selfTest(){
+    	System.out.println("Communicator SelfTest Output");
+        System.out.println("Test Speaker First #1");
+        final Communicator tester = new Communicator();
     	
-
+        new KThread(new Runnable(){
+        	public void run(){
+        		System.out.println("SPK: "+tester.spk+" LSTN: "+tester.lstn);
+        		tester.listen();
+        		System.out.println("SPK: "+tester.spk+" LSTN: "+tester.lstn);
+        	}
+        }).setName("Test Case 1").fork();
+       
+        tester.speak(0);
     }
     
     private Condition spkReady;

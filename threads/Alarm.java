@@ -36,9 +36,18 @@ public class Alarm {
     }
 
     public static void selfTest(){
-    	
-    	
-    	
+    	// Wait 2 seconds and print after wait
+    	new KThread(new Runnable(){
+    		public void run(){
+    			Alarm a = new Alarm();
+    	    	
+    	    	System.out.println("Start and Wait");
+    	    	a.waitUntil(2000);
+    	    	System.out.println("After Wait");
+    		}
+    		
+    	}).setName("Test Case 1").fork();
+
     }
     /**
      * Put the current thread to sleep for at least <i>x</i> ticks,
@@ -64,10 +73,10 @@ public class Alarm {
 	long wakeTime = Machine.timer().getTime() + x;
 	Machine.interrupt().disable();
 	
-	while(wakeTime < Machine.timer().getTime()){
-		KThread.sleep();
+	while(wakeTime > Machine.timer().getTime()){
+		timerInterrupt();
 	}
-	timerInterrupt();
+	
     }
 
 }

@@ -25,7 +25,6 @@ public class Condition2 {
     public Condition2(Lock conditionLock) {
 	this.conditionLock = conditionLock;
     waitList = new LinkedList<KThread>(); 
-    thread = new KThread();
     }
 
     /**
@@ -51,6 +50,69 @@ public class Condition2 {
 
     
     public static void selfTest(){
+    	final Lock l = new Lock();
+    	final Condition2 m = new Condition2(l);
+    
+    	new KThread(new Runnable(){
+    		public void run(){
+    			l.acquire();
+    			System.out.println("Before Sleep");
+    			System.out.println(m.waitList.size());
+    			m.sleep();
+    		}
+    	}).setName("Test Case 1").fork();
+  
+    	new KThread(new Runnable(){
+    		public void run(){	
+    			System.out.println(m.waitList.size());	
+    			l.acquire();
+    			m.wake();
+    			System.out.println(m.waitList.size());
+    			l.release();
+    		}
+    	}).setName("Test Case 1").fork();
+    	
+    	/*
+    	 * Create 3 threads and put them to sleep and wake them all a the end.
+    	 */
+
+    	new KThread(new Runnable(){
+    		public void run(){
+    			l.acquire();
+    			System.out.println("Before Sleep");
+    			System.out.println(m.waitList.size());
+    			m.sleep();
+    		}
+    	}).setName("Test Case 2").fork();
+    	
+
+    	new KThread(new Runnable(){
+    		public void run(){
+    			l.acquire();
+    			System.out.println("Before Sleep");
+    			System.out.println(m.waitList.size());
+    			m.sleep();
+    		}
+    	}).setName("Test Case 2").fork();
+    
+    	new KThread(new Runnable(){
+    		public void run(){
+    			l.acquire();
+    			System.out.println("Before Sleep");
+    			System.out.println(m.waitList.size());
+    			m.sleep();	
+    		}
+    	}).setName("Test Case 2").fork();
+    	
+    	new KThread(new Runnable(){
+    		public void run(){
+    			l.acquire();
+    			System.out.println(m.waitList.size());
+    			m.wakeAll();
+    			System.out.println(m.waitList.size());
+    		}
+    	}).setName("Test Case 2").fork();
+    	
     	
     }
     	
@@ -66,7 +128,7 @@ public class Condition2 {
 	//index in the list
 	if(waitList.size() > 0){
 		boolean setStatus = Machine.interrupt().disable();
-		KThread thread = (KThread) waitList.removeLast();
+		KThread thread = waitList.removeFirst();
 		if(thread != null){
 			thread.ready();
 		}
@@ -79,15 +141,12 @@ public class Condition2 {
      * thread must hold the associated lock.
      */
     public void wakeAll() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-	for(int i = 0; i <= waitList.size(); i++){
-		
-		thread = (KThread) waitList.get(i);
-		wake();
-	}
+    	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+		while(!waitList.isEmpty()){
+			wake();
+		}
     }
 
     private Lock conditionLock;
     private LinkedList<KThread> waitList;
-    KThread thread;
 }

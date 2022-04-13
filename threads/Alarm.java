@@ -64,8 +64,13 @@ public class Alarm {
      * @see	nachos.machine.Timer#getTime()
      */
     public void waitUntil(long x) {
-	// for now, cheat just to get something working (busy waiting is bad)
+    	long wakeTime = Machine.timer().getTime() + x;
+    	while (wakeTime > Machine.timer().getTime())
+    	    KThread.yield();
     	
+    	// for now, cheat just to get something working (busy waiting is bad)
+    	//System.out.println("Call");
+   /*
     if (x <= 0) {
     	return;
     }
@@ -76,7 +81,8 @@ public class Alarm {
 	while(wakeTime > Machine.timer().getTime()){
 		timerInterrupt();
 	}
-	
+	*/
+	//System.out.println("Call");
     }
 
 }

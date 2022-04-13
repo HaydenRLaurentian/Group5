@@ -22,12 +22,24 @@ public class UserProcess {
     /**
      * Allocate a new process.
      */
+	protected OpenFile stdin;
+	protected OpenFile stdout;
+	
     public UserProcess() {
 	int numPhysPages = Machine.processor().getNumPhysPages();
 	pageTable = new TranslationEntry[numPhysPages];
 	for (int i=0; i<numPhysPages; i++)
 	    pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
+    
+		stdin = UserKernel.console.openForReading();
+		stdout = UserKernel.console.openForWriting();
+
+	
+	fileDescriptorTable[0] = stdin; //stdin
+	fileDescriptorTable[1] = stdout; //stdout
     }
+    
+    
     
     /**
      * Allocate and return a new process of the correct class. The class name
@@ -435,7 +447,7 @@ public class UserProcess {
      */
     
     private int handleOpen(int fileAddress){
-    	
+    	System.out.println("Called");
     	if (fileAddress <= 0){
     		Lib.debug(dbgProcess, "handleOpen: Invalid address");
     		return -1;
@@ -444,7 +456,7 @@ public class UserProcess {
     	String fileName = readVirtualMemoryString(fileAddress, 256);
     	
     	if (fileName == null){
-    		Lib.debug(dbgProcess,  "handleOpen: Illegal Filename");
+    		Lib.debug(dbgProcess, "handleOpen: Illegal Filename");
     		return -1;
     	}
     	
@@ -496,7 +508,7 @@ public class UserProcess {
      */
     
     private int handleCreate(int virtAddr){
-    	
+    	System.out.println("Called");
     	//check name validity
     	if(virtAddr < 0){
     		Lib.debug(dbgProcess, "handleCreate: invalid virtual address");
@@ -514,28 +526,25 @@ public class UserProcess {
     	
     	int emptyIndex = -1;
     	
-    	for(int i=2; i < 16 || emptyIndex > 0; i++){   
+    	for(int i=2; i < 16 && emptyIndex == -1; i++){   
     		if(fileDescriptorTable[i] == null){
     			emptyIndex = i;
     		}
     	}
     	if (emptyIndex == -1){
     		Lib.debug(dbgProcess, "handleCreate: No available file slot");
+    		
     		return -1;
     	}  	
-
     	//create file: if cannot create file, show error
     	try{
-    		OpenFile fileToCreate = ThreadedKernel.fileSystem.open(fileName, true);
-    		//or use:Filesystem fs = Machine.stubFileSystem(); 
-    		//OpenFile file = fs.open(fileName, true); ????????????????????????
-
-    		if (fileToCreate == null){
+    		OpenFile file = ThreadedKernel.fileSystem.open(fileName, true);
+    		if (file == null){
     			Lib.debug(dbgProcess, "handleCreate: could not create file");
     			return - 1;
     		}
     		else{
-    			fileDescriptorTable[emptyIndex] = fileToCreate;
+    			fileDescriptorTable[emptyIndex] = file;
     			return emptyIndex; 
     		}
     	}catch (Exception ex){
@@ -553,7 +562,7 @@ public class UserProcess {
  *  @return status 0 if close was successful, -1 otherwise
  */    
     private int handleClose(int index){
-    	
+    	System.out.println("Called");
     	int status = 0;
     	
     	//ensure index is greater than 0 and less than 16
@@ -584,7 +593,7 @@ public class UserProcess {
      */
     
     private int handleUnlink(int nameAddr){
-    	
+    	System.out.println("Called");
     	String fileName = readVirtualMemoryString(nameAddr, 256);
     	
     	if (fileName == null){
@@ -614,7 +623,7 @@ public class UserProcess {
      *  @return -1 if error, fileDescript+data+offset+bytesRead to writeVirtualMemory
      */
     private int handleRead(int fileDescript, int memAddr, int numBytes){
-    	  
+    	System.out.println("Called");
     	if (fileDescript < 0 || fileDescript > 16){
     		Lib.debug(dbgProcess, "handleRead: fileDescriptor out of bounds");
     		return -1; 
@@ -653,7 +662,6 @@ public class UserProcess {
      *  @return -1 if error, number of bytes written otherwise 
      */
     private int handleWrite(int fileDescript, int memAddr, int numBytes){
-    	
     	if (fileDescript < 0 || fileDescript > 16){
     		Lib.debug(dbgProcess, "handleWrite: fileDescriptor out of bounds");
     		return -1; 
@@ -679,7 +687,7 @@ public class UserProcess {
     	//write data to memory 
     	int writtenBytes = outputFile.write(data, 0, data.length);
     	
-    	if (writtenBytes <= data.length){
+    	if (writtenBytes < data.length){
     		Lib.debug(dbgProcess, "handleWrite: bytes written < total data bytes");
     		return -1;
     	}
@@ -705,7 +713,7 @@ public class UserProcess {
      *  @return -1 if error, child processID otherwise
      */
     private int handleExec(int fileNameVaddr, int argNum, int argOffset){
-    
+    	System.out.println("Called");
     	//check if fileNameVaddr is less than 0
     	if (fileNameVaddr < 0){
     		Lib.debug(dbgProcess, "handleExec: invalid address");
@@ -771,8 +779,9 @@ public class UserProcess {
      *  @return -1 if error, 1 if process is successful 
      *  
      */
+   
+    
     private int handleJoin(int processId, int addr){
-    	
     	if (this.processID == processId){
     		Lib.debug(dbgProcess,  "handleJoin: cant join itself");
     		return -1;
@@ -826,7 +835,7 @@ public class UserProcess {
     			return -1;    			
     		}else{
     //lock.release();
-    			thread.sleep(); //???????????????????????????????????????????????
+    			//thread.sleep(); //???????????????????????????????????????????????
     Machine.interrupt().restore(machineStatus);			
     			return 1;
     		}    		
@@ -846,28 +855,25 @@ public class UserProcess {
      * 
      */
     private void handleExit(int status){
-    	
     	if (parent != null){
-    		
+ 
     		lock.acquire();
-    		
     		for (int i = 0; i < childProcessList.size(); i++){
     			handleClose(i);
     			childProcessList.get(i).parent = null;
     		}
     		childProcessList.clear();
-    		
+    		System.out.println("Called");
     		lock.release();
     		
-    		Lib.debug(dbgProcess,  "handleExit: removed child processes...now terminating");
-    		
-    		if (this.processID == 0) {
-    			Kernel.kernel.terminate();
-    		}else{
-    			KThread.finish();
-    		}  		
-    		Lib.debug(dbgProcess,  "handleExit: good bye");
+    		Lib.debug(dbgProcess,  "handleExit: removed child processes...now terminating");	
     	}
+    	if (this.processID == 0) {
+			Kernel.kernel.terminate();
+		}else{
+			KThread.finish();
+		}  		
+		Lib.debug(dbgProcess,  "handleExit: good bye");
     }
     
     
@@ -926,7 +932,7 @@ public class UserProcess {
 //GLOBAL VARIABLES FOR PHASE 2........................
     
     // for handleOpen()
-    private OpenFile[] fileDescriptorTable;
+    private OpenFile[] fileDescriptorTable = new OpenFile[16];
     
     //for loadSections( )
     private Lock lock = new Lock();

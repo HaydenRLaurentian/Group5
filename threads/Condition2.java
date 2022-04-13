@@ -34,6 +34,7 @@ public class Condition2 {
      * automatically reacquire the lock before <tt>sleep()</tt> returns.
      */
     public void sleep() {
+    	
 	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 
 	//add thread to linkList of waiting threads, release lock,
@@ -121,7 +122,8 @@ public class Condition2 {
      * current thread must hold the associated lock.
      */
     public void wake() {
-	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
+    	System.out.println("Call");
+    	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 	
 	//the idea here is if several threads were added to the
 	//linked list the first thread added would be at the last
@@ -141,6 +143,7 @@ public class Condition2 {
      * thread must hold the associated lock.
      */
     public void wakeAll() {
+    	System.out.println("Call");
     	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
 		while(!waitList.isEmpty()){
 			wake();

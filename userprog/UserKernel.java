@@ -33,8 +33,9 @@ public class UserKernel extends ThreadedKernel {
      * Test the console device.
      */	
     public void selfTest() {
-	super.selfTest();
-
+	//super.selfTest();	
+    	
+	
 	System.out.println("Testing the console device. Typed characters");
 	System.out.println("will be echoed until q is typed.");
 
@@ -97,7 +98,7 @@ public class UserKernel extends ThreadedKernel {
 	String shellProgram = Machine.getShellProgramName();	
 	Lib.assertTrue(process.execute(shellProgram, new String[] { }));
 
-	KThread.currentThread().finish();
+	KThread.finish();
     }
 
     /**
